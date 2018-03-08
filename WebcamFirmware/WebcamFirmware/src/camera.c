@@ -6,7 +6,7 @@
  
  
  camera.c contains
- void vsync_handler(uint32_t ul_id, uint32_t ul_mask)
+ void vsync_handler(uint32_t ul_id, uint32_t ul_mask)4
  void init_vsync_interrupts(void)
  void configure_twi(void);
  void pio_capture_init(Pio *p_pio, uint32_t ul_id)
@@ -213,7 +213,7 @@ void init_camera(void)
 	ov_configure(BOARD_TWI, JPEG_INIT);
 	ov_configure(BOARD_TWI, YUV422);
 	ov_configure(BOARD_TWI, JPEG);
-	ov_configure(BOARD_TWI, JPEG_640x480);
+	ov_configure(BOARD_TWI, JPEG_320x240);
 
 
 	/* Wait 3 seconds to let the image sensor to adapt to environment */

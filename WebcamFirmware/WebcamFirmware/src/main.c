@@ -17,47 +17,48 @@ int main (void)
 	wdt_disable(WDT);
 	board_init();
 	
-	
+	// start the clock that counts the seconds
 	configure_tc();
 	tc_start(TC0, 0);
 
-	// Configure all of the wifi stuff
+	// Configure the Wifi UART communication stuff
 	configure_usart_wifi();
 	configure_wifi_comm_pin();
 	configure_wifi_web_setup_pin();
 	
-	
+	// Reset the wifi by pulling the wifi reset pin low, then bringing it back high.
 	ioport_set_pin_level(PIN_WIFI_RESET,LOW); //reset WIFI
 	delay_ms(10);
 	ioport_set_pin_level(PIN_WIFI_RESET,HIGH); //turn Wifi Back on
 	
-	
-	
-	//initialize camera and start capture
-	
-	//pmc_enable_pllack(7, 0x1,1);
+	//initialize camera
 	init_camera();
 
-	//start_capture();
+	// Variable to store all write commands
+	char sendString[80];
 
+	// Don't do anything until the wifi chip has connected to the network
 	while(ioport_get_pin_level(PIN_WIFI_NETWORK_STATUS)==LOW){
+		// If user has pushed the button to start wifi setup, do so.
 		if(wifi_setup_flag == true){
-			char sendString[80];
+			// clear and initialize the send string
 			for(int ii = 0; ii<80; ii++){
 				sendString[ii] = 0;
 			}
+			// Write the desired message to the appropriate string
 			sprintf(sendString, "setup web\r\n");
+			// Send the string to the wifi chip
 			write_wifi_command(&sendString,3);
+			// Clear the flag
 			wifi_setup_flag = false;
 		}
 	}
 	
-
-			
+	// Main Loop //////////////////////////////////////////////////////////////////////////////////////////////////		
 	while(1){
-		delay_ms(500);
+		// If user has pushed the button to enter web setup, enter this routine
 		if(wifi_setup_flag == true){
-			char sendString[80];
+			// clear the send string
 			for(int ii = 0; ii<80; ii++){
 				sendString[ii] = 0;
 			}
@@ -68,11 +69,10 @@ int main (void)
 		else{
 			bool wifiNetworkConnected = ioport_get_pin_level(PIN_WIFI_NETWORK_STATUS); //check if connected to a network
 			if(wifiNetworkConnected == true){												//if yes, are there any open streams?
-				char sendString[80];
 				for(int ii = 0; ii<80; ii++){
 					sendString[ii] = 0;
 				}
-				sprintf(sendString, "stream_poll 0\r\n");
+				sprintf(sendString, "stream_poll all\r\n");// previous: stream_poll 0\r\n
 				int strlength = strlen(sendString);
 				write_wifi_command(&sendString,3);
 				if(receivedMessage!=COMMAND_FAILED){
