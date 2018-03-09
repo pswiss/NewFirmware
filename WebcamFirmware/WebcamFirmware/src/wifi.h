@@ -103,9 +103,16 @@ volatile uint8_t g_p_uc_cap_dest_buf[IMAGE_BUFFER_SIZE];
 #define COMMAND_FAILED				5
 #define msg_COMMAND_FAILED			"Command failed"
 
+#define RECIEVE_NONE				6
+#define msg_RECIEVE_NONE			"None"
+
 
 #define msg_WEBSOCKET_DISCONNECTED	"Websocket disconnected"
 #define msg_UNKNOWN_COMMAND			"Unknown command"
+
+#define DEFAULT						4000
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // function prototypes

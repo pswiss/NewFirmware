@@ -104,14 +104,20 @@ void process_data_wifi (void)
 			receivedMessage = CLIENT_NOT_CONNECTED	;
 		}
 		else{
-				if(strstr(buffer_wifi,msg_COMMAND_FAILED)){
-					receivedMessage = COMMAND_FAILED;
+			if(strstr(buffer_wifi,msg_COMMAND_FAILED)){
+				receivedMessage = COMMAND_FAILED;
+			}
+			else{
+				if(strstr(buffer_wifi,msg_RECIEVE_NONE)){
+					receivedMessage = RECIEVE_NONE;
 				}
 				else{
-					receivedMessage = 4000;
+					receivedMessage = DEFAULT;
 				}
-    		}		      
+			}
+		}
 	}
+
 
 	/*#define NO_MESSAGE					0
 
@@ -185,7 +191,9 @@ void configure_usart_wifi(void)
 	/* Configure USART TXD pin */
 	gpio_configure_pin(PIN_USART0_TXD_IDX, PIN_USART0_TXD_FLAGS);
 	/* Configure USART CTS pin */
-	gpio_configure_pin(PIN_USART0_CTS_IDX, PIN_USART0_CTS_FLAGS);
+	//gpio_configure_pin(PIN_USART0_CTS_IDX, PIN_USART0_CTS_FLAGS);
+	ioport_set_pin_dir(PIN_USART0_CTS_IDX,IOPORT_DIR_OUTPUT);
+	ioport_set_pin_level(PIN_USART0_CTS_IDX,false);
 	/* Configure USART RTS pin */
 	gpio_configure_pin(PIN_USART0_RTS_IDX, PIN_USART0_RTS_FLAGS);
 	
@@ -293,21 +301,22 @@ void write_image_to_file(void)
 	for(int k = captured_image_start; k < captured_image_end;k++){
 		imageToWrite[k-captured_image_start] = g_p_uc_cap_dest_buf[k];
 	}
-
 	if(imgLength != 0){
 		char sendString[80];
 		for(int ii = 0; ii<80; ii++){
 			sendString[ii] = 0;
     	}
-
 		sprintf(sendString, "image_transfer %d\r\n",imgLength);
 		write_wifi_command(&sendString, 3);
-		delay_ms(100);
 		// only send the image if the wifi chip is ready for it
 		if(receivedMessage==START_TRANSFER){
-			
 			// write the command via USART
-			write_wifi_command(imageToWrite,0);
+			//write_wifi_command(imageToWrite,1);
+			delay_ms(100);
+			for(int k = 0; k < imgLength; k++){
+				usart_write(BOARD_USART, imageToWrite[k]);
+			}			
+			
 			delay_ms(200);
     	}
 		else{
@@ -315,10 +324,8 @@ void write_image_to_file(void)
 				delay_ms(500);
       		}	
 			else{
-
 			}  					
     	}
-		
 	}
 	else{
 	}
