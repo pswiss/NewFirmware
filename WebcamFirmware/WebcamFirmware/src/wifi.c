@@ -314,10 +314,10 @@ void write_image_to_file(void)
 			//write_wifi_command(imageToWrite,1);
 			delay_ms(100);
 			for(int k = 0; k < imgLength; k++){
-				usart_write(BOARD_USART, imageToWrite[k]);
+				usart_putchar(BOARD_USART, imageToWrite[k]);
 			}			
 			
-			delay_ms(200);
+			delay_ms(20);
     	}
 		else{
 			if(receivedMessage==CLIENT_NOT_CONNECTED){
