@@ -127,6 +127,10 @@ void configure_wifi_web_setup_pin(void);
 void write_wifi_command(char* , uint8_t);
 void write_image_to_file(void);
 
+// A few functions I wrote to make main() a bit cleaner
+void resetWifi(void);
+void writeWifiConfigurationCommands(void);
+void waitForWifiNetworkConnect(void);
 
 // Camera stuff
 volatile int captured_image_start;

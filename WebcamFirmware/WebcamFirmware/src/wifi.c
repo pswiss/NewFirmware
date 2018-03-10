@@ -94,7 +94,7 @@ void process_data_wifi (void)
 {
 	// Compare the received string with some other string
 	/*if(strstr(buffer_wifi, "StringToCompare")){
-		// Do something
+		// set receivedMessage variable as appropriate
 	}*/
 	if(strstr(buffer_wifi,msg_START_TRANSFER)){
 		receivedMessage = START_TRANSFER;
@@ -117,22 +117,6 @@ void process_data_wifi (void)
 			}
 		}
 	}
-
-
-	/*#define NO_MESSAGE					0
-
-	#define NOT_CONNECTED				1
-	#define msg_NOT_CONNECTED			"Client not connected"
-
-	#define START_TRANSFER				2
-	#define msg_START_TRANSFER			"Start transfer"
-
-	#define TRANSFER_COMPLETE			3
-	#define msg_COMPLETE				"Complete"
-
-	#define msg_WEBSOCKET_CONNECTED		"Websocket connected"
-	#define msg_WEBSOCKET_DISCONNECTED	"Websocket disconnected"
-	#define msg_UNKNOWN_COMMAND			"Unknown command"*/
 }
 
 /*
@@ -287,13 +271,8 @@ to sense it before moving on, or simply insert a slight delay
 */
 void write_image_to_file(void) 
 {
-	/*uint8_t imageToTransfer[50];
-	strncpy(imageToTransfer,"1234",50);
-	uint32_t img_length;
-	img_length = strlen(imageToTransfer);*/
 	
 	// Make sure that the image is valid.
-	
 	int imgLength = find_image_len();
 
 	// Explicitly create the image to write
@@ -308,16 +287,17 @@ void write_image_to_file(void)
     	}
 		sprintf(sendString, "image_transfer %d\r\n",imgLength);
 		write_wifi_command(&sendString, 3);
+
 		// only send the image if the wifi chip is ready for it
 		if(receivedMessage==START_TRANSFER){
 			// write the command via USART
 			//write_wifi_command(imageToWrite,1);
-			delay_ms(100);
+			//delay_ms(100);
 			for(int k = 0; k < imgLength; k++){
 				usart_putchar(BOARD_USART, imageToWrite[k]);
 			}			
 			
-			delay_ms(20);
+			delay_ms(10);
     	}
 		else{
 			if(receivedMessage==CLIENT_NOT_CONNECTED){
@@ -328,5 +308,47 @@ void write_image_to_file(void)
     	}
 	}
 	else{
+	}
+}
+
+
+// Simple function to reset the wifi
+void resetWifi(void){
+	// Reset the wifi by pulling the wifi reset pin low, then bringing it back high.
+	ioport_set_pin_level(PIN_WIFI_RESET,LOW); //reset WIFI
+	delay_ms(50);
+	ioport_set_pin_level(PIN_WIFI_RESET,HIGH); //turn Wifi Back on
+	delay_ms(1000); // Account for ~0.7s high during reset
+}
+
+void writeWifiConfigurationCommands(void){
+	///////////////////////////////////////////////////////////////////////
+	// Write all wifi chip setup commands
+	///////////////////////////////////////////////////////////////////////
+	write_wifi_command("set system.cmd.echo off\r\n",2);
+	write_wifi_command("set uart.flow 0 on\r\n",2);
+	write_wifi_command("set bu c r 10000\r\n",2);
+	write_wifi_command("set system.indicator.gpio wlan 20\r\n",2);
+	write_wifi_command("set system.indicator.gpio network 18\r\n",2);
+	write_wifi_command("set system.indicator.gpio softap 21\r\n",2);
+	write_wifi_command("set system.cmd.gpio 13\r\n",2);
+	write_wifi_command("set wlan.network.status_gpio 14\r\n",2);
+	write_wifi_command("save\r\n",2);
+	delay_ms(100);
+}
+
+
+// Don't do anything until the wifi chip has connected to the network
+void waitForWifiNetworkConnect(void){
+	ioport_set_pin_dir(PIN_WIFI_NETWORK_STATUS,IOPORT_DIR_INPUT);
+	while(ioport_get_pin_level(PIN_WIFI_NETWORK_STATUS)==0){
+		// If user has pushed the button to start wifi setup, do so.
+		if(wifi_setup_flag == true){
+
+			write_wifi_command("setup web\r\n",3);
+			// Clear the flag
+			wifi_setup_flag = false;
+			waitForWifiNetworkConnect();
+		}
 	}
 }
