@@ -280,7 +280,7 @@ void write_image_to_file(void)
 	for(int k = captured_image_start; k < captured_image_end;k++){
 		imageToWrite[k-captured_image_start] = g_p_uc_cap_dest_buf[k];
 	}
-	if(imgLength != 0){
+	if((imgLength != 0)&&(imgLength<WIFI_RX_BUFF_SIZE)){
 		char sendString[80];
 		for(int ii = 0; ii<80; ii++){
 			sendString[ii] = 0;
@@ -292,7 +292,7 @@ void write_image_to_file(void)
 		if(receivedMessage==START_TRANSFER){
 			// write the command via USART
 			//write_wifi_command(imageToWrite,1);
-			//delay_ms(100);
+			delay_ms(50);
 			for(int k = 0; k < imgLength; k++){
 				usart_putchar(BOARD_USART, imageToWrite[k]);
 			}			

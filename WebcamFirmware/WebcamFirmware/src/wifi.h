@@ -44,7 +44,8 @@ of the pin used for wifi interfaceoiasjdfpijasdf
 #define USART_IRQn					USART0_IRQn
 #define ALL_INTERRUPT_MASK			0xffffffff
 #define MAX_INPUT_WIFI				1000
-
+#define WIFI_RX_BUFF_SIZE			10000
+	
 // Command Complete Pin configuration: PA12
 #define WIFI_COM_COMPLETE_ID		ID_PIOA
 #define WIFI_COM_COMPLETE_PIO		PIOA
